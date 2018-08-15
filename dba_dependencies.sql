@@ -6,9 +6,6 @@ where 1=1
 start with type = 'PACKAGE BODY' and owner = 'OWNER' and name = 'NAME'
 connect by prior referenced_type = type and prior referenced_owner = owner and prior referenced_name = name
 
---select * from dba_dependencies d
---where type = 'PACKAGE BODY' and owner = 'CRM' and name = 'CUSTOM_CRM_VS_SM'
-
 -- �������, ��������� �� ���������� �������
 select lpad(' ',3*level)||type||' '||owner||'.'||name
 from dba_dependencies d
