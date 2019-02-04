@@ -20,7 +20,7 @@ BEGIN
   DBMS_LOB.createtemporary(l_blob, true);
 
   -- Make a HTTP request and get the response.
-  l_http_request  := UTL_HTTP.begin_request(url => p_url, https_host => 'e1.ru');
+  l_http_request  := UTL_HTTP.begin_request(url => p_url, https_host => 'www.google.com');
 
   l_http_response := UTL_HTTP.get_response(l_http_request);
 
