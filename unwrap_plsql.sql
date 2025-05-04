@@ -39,8 +39,8 @@ dbms_output.enable(null);
 dbms_lob.createtemporary(tmp,true);
 dbms_lob.createtemporary(tmp2,true);
 dbms_lob.createtemporary(tmp3,true);
--- ���, �������� � ��� ������� (��������� ������, ���� ������, ��������� ��� �������) ��� unwrap
- for c in (select line, text from dba_source where type = 'PACKAGE BODY' and owner = 'OWNER' and name = 'PACKAGE_NAME' order by line) loop
+-- type, owner and object name (package, package body, procedure or function) to unwrap
+for c in (select line, text from dba_source where type = 'PACKAGE BODY' and owner = 'OWNER' and name = 'PACKAGE_NAME' order by line) loop
   if c.line = 1 then
    b64_len := to_number(regexp_substr(regexp_substr(c.text,'^[0-9a-f]+ [0-9a-f]+$',1,1,'m'),'[0-9a-f]+',1,2),'XXXXXXXXXX');
    dbms_lob.append(tmp,utl_raw.cast_to_raw(replace(substr(c.text,regexp_instr(c.text,'^[0-9a-f]+ [0-9a-f]+$',1,1,1,'m')),chr(10),'')));
@@ -52,7 +52,7 @@ end loop;
 
 -- dbms_lob.trim(tmp,b64_len);
 
--- ������������� base64
+-- base64 unpack
 -- tmp := utl_encode.base64_decode(tmp);
 
 v_offset := 1;
@@ -63,15 +63,15 @@ for i in 1 .. ceil(dbms_lob.getlength(tmp)/v_buffer_size) loop
   v_offset := v_offset + v_buffer_size;
 end loop;
 
--- ������� ������ 20 ����
+-- remove first 20 bytes
 dbms_lob.copy(tmp3,tmp2,dbms_lob.getlength(tmp)-20,1,21);
 
--- ������������� �� ������� charmap
+-- recode by table charmap
 for i in 1 .. dbms_lob.getlength(tmp3) loop
   dbms_lob.write(tmp3,1,i,utl_raw.substr(charmap,utl_raw.cast_to_binary_integer(dbms_lob.substr(tmp3,1,i))+1,1));
 end loop;
 
--- ������������� zlib
+-- zlib unpack
 dbms_lob.createtemporary(t_out,true);
 dbms_lob.createtemporary(t_tmp,true);
 t_tmp := hextoraw('1F8B0800000000000003'); -- gzip header
